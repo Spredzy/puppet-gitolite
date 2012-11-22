@@ -4,25 +4,27 @@
 #
 #
 class gitolite (
-  $gitolite_admin_user = $git::params::gitolite_admin_user,
-  $home_gitolite_admin_user = $git::params::home_gitolite_admin_user) inherits git::params {
+  $gitolite_admin_user = $gitolite::params::gitolite_admin_user,
+  $home_gitolite_admin_user = $gitolite::params::home_gitolite_admin_user) inherits git::params {
 
   # IF osfamily is RedHat
   #Class['epel'] -> Class['git'] -> Class['gitolite']
   #class {'epel' :
   #}
   # ELSE
-  Class['git'] -> Class['gitolite']
+  Class['epel'] -> Class['git'] -> Class['gitolite']
 
   # TODO: Change default protocol from ssh to none on git module
   #class {'git' :
   #  protocol : 'none';
   #}
-  
+
   # TODO :
   # Parametertriz $HOME for both gitolite and gitolite_admin_user
-  # 
+  #
 
+  class {'epel':
+  }
   class {'git':
   }
 
@@ -81,6 +83,7 @@ class gitolite (
 
  exec {"cp ${home_gitolite_admin_user}/.ssh/id_rsa.pub /var/lib/gitolite/${gitolite_admin_user}.pub" :
     cwd     =>  '/',
+    user    =>  'root',
     path    =>  '/bin',
     unless  =>  "ls /var/lib/gitolite/${gitolite_admin_user}.pub",
     require =>  [Exec["ssh-keygen -N '' -f ${home_gitolite_admin_user}/.ssh/id_rsa"], Package['gitolite']],
@@ -99,7 +102,7 @@ class gitolite (
     content => template('gitolite/gitolite.rc'),
     owner  =>  'gitolite',
     group   =>  'gitolite',
-    mode    =>  '0700',
+    mode    =>  '0770',
     require => File["/var/lib/gitolite/${gitolite_admin_user}.pub"],
   }
 
