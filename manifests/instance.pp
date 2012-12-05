@@ -4,19 +4,16 @@
 #   home => '/opt/yanis',
 #
 define gitolite::instance(
-  $admin_ssh_key,
-  $admin_user,
+  $admin_pub_key,
   $version            = '3.04',
-  $admin_ssh_key_type = 'ssh-rsa',
   $user               = $name,
-  $home               = "/opt/gitolite-${name}",
+  $home               = "/opt/${name}",
 ) {
 
   require gitolite
 
-  $admin_username = get_first_part($admin_user, '@')
+  $admin_username = get_username($admin_pub_key)
   $major_ver = get_first_part($version, '.')
-  $public_key = join([$admin_ssh_key_type, $admin_ssh_key, $admin_user], " ")
 
   exec {"curl -L https://github.com/sitaramc/gitolite/archive/v${version}.tar.gz  | tar -xzf - && cd gitolite-${version}" :
     cwd       =>  '/var/tmp',
@@ -27,15 +24,15 @@ define gitolite::instance(
     unless    =>  "ls /var/tmp/gitolite-${version}",
   }
 
-  group {"gitolite-${user}" :
+  group {$user :
     ensure => present,
   }
 
-  user {"gitolite-${user}" :
+  user {$user :
     ensure           => present,
     home             => $home,
-    comment          => "gitolite user gitolite-${user}",
-    gid              => "gitolite-${user}",
+    comment          => "gitolite user ${user}",
+    gid              => $user,
     shell            => "/bin/sh",
     password_min_age => '0',
     password_max_age => '99999',
@@ -47,10 +44,10 @@ define gitolite::instance(
 
   file {$home :
     ensure  => directory,
-    owner   => "gitolite-${user}",
-    group   => "gitolite-${user}",
-    mode    => '0700',
-    require => User["gitolite-${user}"],
+    owner   => $user,
+    group   => $user,
+    mode    => '0710',
+    require => User[$user],
   }
 
   exec {"cp -r /var/tmp/gitolite-${version} ${home}/gitolite" :
@@ -64,8 +61,8 @@ define gitolite::instance(
 
   file {"${home}/gitolite":
     ensure  => directory,
-    owner   => "gitolite-${user}",
-    group   => "gitolite-${user}",
+    owner   => $user,
+    group   => $user,
     mode    => '0700',
     recurse => true,
     require => Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"],
@@ -73,24 +70,24 @@ define gitolite::instance(
 
   file {"${home}/${admin_username}.pub" :
     ensure  => present,
-    owner   => "gitolite-${user}",
-    group   => "gitolite-${user}",
+    owner   => $user,
+    group   => $user,
     mode    => '0700',
-    content => $public_key,
+    content => $admin_pub_key,
     require => File["${home}/gitolite"],
   }
 
   file {"${home}/.gitolite.rc" :
     ensure  =>  present,
     content =>  template("gitolite/gitolite-${major_ver}.rc"),
-    owner   =>  "gitolite-${user}",
-    group   =>  "gitolite-${user}",
+    owner   =>  $user,
+    group   =>  $user,
     mode    =>  '0770',
     require =>  File["${home}/${admin_username}.pub"],
   }
 
  exec {"${home}/gitolite/src/gitolite setup -pk ${admin_username}.pub" :
-    user        => "gitolite-${user}",
+    user        => $user,
     cwd         => $home,
     environment => ["HOME=${home}"],
     path        => ['/usr/bin', '/bin'],
@@ -100,8 +97,8 @@ define gitolite::instance(
 
   file {"${home}/.ssh" :
     ensure  =>  present,
-    owner   =>  "gitolite-${user}",
-    group   =>  "gitolite-${user}",
+    owner   =>  $user,
+    group   =>  $user,
     mode    =>  '0600',
     recurse =>  true,
     require =>  Exec["${home}/gitolite/src/gitolite setup -pk ${admin_username}.pub"],
