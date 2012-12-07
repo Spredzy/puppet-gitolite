@@ -7,6 +7,21 @@ A Puppet module that install and configure gitolite.
 
 ## Example
 
+### Gitolite
+
+If you are fine with your current package manager git version a simple `include gitolite` will be enough
+
+If you want to have a specific version of git installed on your server the following declaration will meet your need
+
+```
+class {'gitolite' :
+    provider    => 'source',
+    git_version => '1.8.0',
+}
+```
+
+### Gitolite::instance
+
 ### Simplest
 
 ```
