@@ -1,7 +1,14 @@
 # Class: gitolite
 #
-# This class install gitolite and a gitolite-admin account
+#   Ensure the necessary packages are installed for gitolite installation
 #
+# Parameters:
+#
+# Requires:
+#
+# Examples:
+#
+#   include gitolite
 #
 class gitolite () {
 

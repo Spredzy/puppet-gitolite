@@ -1,7 +1,19 @@
 # Definition: gitolite::instance
 #
-# gitolite::instance{'yanis':
-#   home => '/opt/yanis',
+#   Install a gitolite instance
+#
+# Parameters:
+#
+#   [*admin_pub_key*] : The content of the gitolite administrator ssh pub key content
+#   [*version*]       : The gitolite version
+#   [*user*]          : The gitolite user name
+#   [*home*]          : The gitolite base path
+#
+# Examples:
+#
+#   gitolite::instance {'me' :
+#     admin_pub_key => 'ssh-rsa --THE KEY-- root@localhost',
+#   }
 #
 define gitolite::instance(
   $admin_pub_key,
