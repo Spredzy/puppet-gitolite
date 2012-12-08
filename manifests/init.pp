@@ -4,8 +4,8 @@
 #
 # Parameters:
 #
-#   [*provider*]            : the method to install git (packages or source)
-#   [*git_version*]             : The git version number
+#   [*git_provider*]  : the method to install git (packages or source)
+#   [*git_version*]   : The git version number
 #
 # Requires:
 #
@@ -14,16 +14,16 @@
 #   include gitolite
 #
 #   class {'gitolite' :
-#     provider    => 'source',
-#     git_version => '1.8.0',
+#     git_provider  => 'source',
+#     git_version   => '1.8.0',
 #   }
 #
 class gitolite (
-  $provider     => 'package',
-  $git_version  =>  '1.7.1') {
+  $git_provider = 'package',
+  $git_version  =  '1.7.1') {
 
 
-  case $provider {
+  case $git_provider {
     'package' : { require git }
     'source' : {
       class {'git' :

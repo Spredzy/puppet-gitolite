@@ -15,7 +15,7 @@ If you want to have a specific version of git installed on your server the follo
 
 ```
 class {'gitolite' :
-    provider    => 'source',
+    git_provider    => 'source',
     git_version => '1.8.0',
 }
 ```
