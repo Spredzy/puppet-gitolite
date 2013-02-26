@@ -68,7 +68,7 @@ define gitolite::instance(
     path      => '/bin',
     logoutput => on_failure,
     unless    => "ls ${home}/gitolite",
-    require   => File[$home],
+    require   => [File[$home], Exec["curl -L https://github.com/sitaramc/gitolite/archive/v${version}.tar.gz  | tar -xzf - && cd gitolite-${version}"]]
   }
 
   file {"${home}/gitolite":
