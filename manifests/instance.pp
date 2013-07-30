@@ -126,7 +126,7 @@ define gitolite::instance(
     group   => $group,
     mode    => $admin_pub_key_chmod,
     content => $admin_pub_key,
-    require => File[$home],
+    require => [File[$home], Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"]],
   }
 
   file {"${home}/.gitolite.rc" :
