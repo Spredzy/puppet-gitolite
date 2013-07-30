@@ -27,8 +27,8 @@ define gitolite::instance(
   $version             = '3.5.2',
   $user                = $name,
   $group               = $name,
-  $home                = "/opt/${user}",
-  $key_store           = $home,
+  $home                = "/opt/${name}",
+  $key_store           = "/opt/${name}",
   $home_chmod          = '0700',
   $gitolite_chmod      = '0700',
   $repositories_chmod  = '0700',
@@ -60,7 +60,7 @@ define gitolite::instance(
     home             => $home,
     comment          => "gitolite user ${user}",
     gid              => $group,
-    shell            => "/bin/sh",
+    shell            => '/bin/sh',
     password_min_age => '0',
     password_max_age => '99999',
     password         => '*',
@@ -76,6 +76,22 @@ define gitolite::instance(
     mode    => $home_chmod,
     require => [User[$user], Group[$group]],
   }
+
+  if ($key_store != $home) {
+
+    $ks = get_cwd_hash_path($key_store, $user)
+    create_resources('file', $ks)
+
+    file {$key_store :
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+      mode    => $key_store_chmod,
+      require => [User[$user], Group[$group]],
+    }
+
+  }
+
 
   exec {"cp -r /var/tmp/gitolite-${version} ${home}/gitolite" :
     cwd       => '/',
@@ -104,7 +120,7 @@ define gitolite::instance(
     require => Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"],
   }
 
-  file {"${home}/${admin_username}.pub" :
+  file {"${key_store}/${admin_username}.pub" :
     ensure  => present,
     owner   => $user,
     group   => $group,
@@ -122,7 +138,7 @@ define gitolite::instance(
     require =>  File["${key_store}/${admin_username}.pub"],
   }
 
- exec {"${home}/gitolite/src/gitolite setup -pk ${admin_username}.pub" :
+  exec {"${home}/gitolite/src/gitolite setup -pk ${key_store}/${admin_username}.pub" :
     user        => $user,
     cwd         => $home,
     environment => ["HOME=${home}"],
@@ -137,7 +153,7 @@ define gitolite::instance(
     group   =>  $group,
     mode    =>  '0600',
     recurse =>  true,
-    require =>  Exec["${home}/gitolite/src/gitolite setup -pk ${admin_username}.pub"],
+    require =>  Exec["${home}/gitolite/src/gitolite setup -pk ${key_store}/${admin_username}.pub"],
   }
 
 }
