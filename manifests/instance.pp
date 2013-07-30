@@ -24,11 +24,11 @@
 #
 define gitolite::instance(
   $admin_pub_key,
-  $version             = '3.04',
+  $version             = '3.5.2',
   $user                = $name,
   $group               = $name,
-  $home                = "/opt/${name}",
-  $key_store           = "${home}",
+  $home                = "/opt/${user}",
+  $key_store           = $home,
   $home_chmod          = '0700',
   $gitolite_chmod      = '0700',
   $repositories_chmod  = '0700',
