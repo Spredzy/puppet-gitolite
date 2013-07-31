@@ -77,7 +77,7 @@ define gitolite::instance(
     require => [User[$user], Group[$group]],
   }
 
-  if ($key_store != $home) {
+  if (!member([$home, "${home}/.ssh", "${home}/gitolite", "${home}/repositories"], $key_store)) {
 
     $ks = get_cwd_hash_path($key_store, $user)
     create_resources('file', $ks)
@@ -91,7 +91,6 @@ define gitolite::instance(
     }
 
   }
-
 
   exec {"cp -r /var/tmp/gitolite-${version} ${home}/gitolite" :
     cwd       => '/',
@@ -120,13 +119,28 @@ define gitolite::instance(
     require => Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"],
   }
 
-  file {"${key_store}/${admin_username}.pub" :
-    ensure  => present,
-    owner   => $user,
-    group   => $group,
-    mode    => $admin_pub_key_chmod,
-    content => $admin_pub_key,
-    require => [File[$home], Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"]],
+  if (!member([$home, "${home}/.ssh", "${home}/gitolite", "${home}/repositories"], $key_store)) {
+
+    file {"${key_store}/${admin_username}.pub" :
+      ensure  => present,
+      owner   => $user,
+      group   => $group,
+      mode    => $admin_pub_key_chmod,
+      content => $admin_pub_key,
+      require => [File[$key_store], Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"]],
+    }
+
+  } else {
+
+    file {"${key_store}/${admin_username}.pub" :
+      ensure  => present,
+      owner   => $user,
+      group   => $group,
+      mode    => $admin_pub_key_chmod,
+      content => $admin_pub_key,
+      require => [File[$home], File["${home}/.ssh"], File["${home}/repositories"], File["${home}/gitolite"], Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"]],
+    }
+
   }
 
   file {"${home}/.gitolite.rc" :
