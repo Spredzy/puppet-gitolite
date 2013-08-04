@@ -119,6 +119,16 @@ define gitolite::instance(
     require => Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"],
   }
 
+  file {"${home}/.ssh" :
+    ensure  =>  directory,
+    owner   =>  $user,
+    group   =>  $group,
+    mode    =>  '0600',
+    recurse =>  true,
+    require => Exec["cp -r /var/tmp/gitolite-${version} ${home}/gitolite"],
+  }
+
+
   if (!member([$home, "${home}/.ssh", "${home}/gitolite", "${home}/repositories"], $key_store)) {
 
     file {"${key_store}/${admin_username}.pub" :
@@ -159,15 +169,6 @@ define gitolite::instance(
     path        => ['/usr/bin', '/bin'],
     logoutput   => on_failure,
     require     => File["${home}/.gitolite.rc"],
-  }
-
-  file {"${home}/.ssh" :
-    ensure  =>  present,
-    owner   =>  $user,
-    group   =>  $group,
-    mode    =>  '0600',
-    recurse =>  true,
-    require =>  Exec["${home}/gitolite/src/gitolite setup -pk ${key_store}/${admin_username}.pub"],
   }
 
 }
