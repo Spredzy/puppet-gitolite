@@ -1,0 +1,5 @@
+2013-08-05  Yanis Guenane  <yguenane@gmail.com> - 0.1.1
+
+  * Improved installation and configuration flexibility (@zeleznypa)
+  * Default gitolite version  updated to 3.5.2
+

@@ -1,5 +1,5 @@
 name 'yguenane-gitolite'
-version '0.1.0'
+version '0.1.1'
 summary 'A Gitolite Puppet module'
 description "This module aims to install and configure gitolite"
 license 'GPLv3'
